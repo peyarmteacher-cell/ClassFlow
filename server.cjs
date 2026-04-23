@@ -14,13 +14,21 @@ async function startServer() {
   app.use(express.json());
 
   // Serve static files from dist
-  const distPath = path.join(process.cwd(), 'dist');
+  const distPath = path.resolve(__dirname, 'dist');
   console.log('Serving static files from:', distPath);
   
-  app.use(express.static(distPath, {
-    etag: false,
-    maxAge: 0 // Disable caching during debugging
-  }));
+  app.use(express.static(distPath));
+
+  // Debug route to check file existence
+  app.get('/debug-files', (req, res) => {
+    const fs = require('fs');
+    try {
+      const files = fs.readdirSync(distPath);
+      res.json({ distPath, files });
+    } catch (e) {
+      res.status(500).json({ error: e.message, distPath });
+    }
+  });
 
   // Initialize MySQL Connection Pool
   const pool = mysql.createPool({
@@ -200,7 +208,7 @@ async function startServer() {
   });
 
   app.get('*', (req, res) => {
-    const indexPath = path.join(process.cwd(), 'dist', 'index.html');
+    const indexPath = path.resolve(__dirname, 'dist', 'index.html');
     res.sendFile(indexPath);
   });
 
