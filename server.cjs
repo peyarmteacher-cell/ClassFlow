@@ -45,11 +45,13 @@ async function startServer() {
   // Database Schema Setup
   const setupSchema = async () => {
     try {
+      const commonOptions = "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+      
       await pool.query(`
         CREATE TABLE IF NOT EXISTS settings (
           id VARCHAR(255) PRIMARY KEY,
           value TEXT
-        )
+        ) ${commonOptions}
       `);
       
       await pool.query(`
@@ -57,7 +59,7 @@ async function startServer() {
           id VARCHAR(255) PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
           color VARCHAR(50)
-        )
+        ) ${commonOptions}
       `);
       
       await pool.query(`
@@ -66,7 +68,7 @@ async function startServer() {
           name VARCHAR(255) NOT NULL,
           type VARCHAR(50),
           periods_per_week INT DEFAULT 1
-        )
+        ) ${commonOptions}
       `);
       
       await pool.query(`
@@ -74,14 +76,14 @@ async function startServer() {
           id VARCHAR(255) PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
           type VARCHAR(50)
-        )
+        ) ${commonOptions}
       `);
       
       await pool.query(`
         CREATE TABLE IF NOT EXISTS groups_table (
           id VARCHAR(255) PRIMARY KEY,
           name VARCHAR(255) NOT NULL
-        )
+        ) ${commonOptions}
       `);
       
       await pool.query(`
@@ -98,7 +100,7 @@ async function startServer() {
           FOREIGN KEY(teacher_id) REFERENCES teachers(id),
           FOREIGN KEY(room_id) REFERENCES rooms(id),
           FOREIGN KEY(backup_room_id) REFERENCES rooms(id)
-        )
+        ) ${commonOptions}
       `);
       
       await pool.query(`
@@ -106,7 +108,7 @@ async function startServer() {
           id VARCHAR(255) PRIMARY KEY,
           data LONGTEXT NOT NULL,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
+        ) ${commonOptions}
       `);
       console.log('Database schema verified');
     } catch (err) {
