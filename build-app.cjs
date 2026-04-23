@@ -20,7 +20,6 @@ async function run() {
       },
       build: {
         outDir: 'dist',
-        assetsDir: '', // Put assets in root of dist to avoid path issues
         emptyOutDir: true,
         sourcemap: false,
         minify: 'esbuild',

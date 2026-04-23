@@ -13,22 +13,22 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // Serve static files from dist
-  const distPath = path.resolve(__dirname, 'dist');
-  console.log('Serving static files from:', distPath);
-  
-  app.use(express.static(distPath));
+  // Resolve dist path relative to this script
+  const distPath = path.join(__dirname, 'dist');
+  const fs = require('fs');
 
-  // Debug route to check file existence
-  app.get('/debug-files', (req, res) => {
-    const fs = require('fs');
-    try {
-      const files = fs.readdirSync(distPath);
-      res.json({ distPath, files });
-    } catch (e) {
-      res.status(500).json({ error: e.message, distPath });
-    }
-  });
+  console.log('--- Static File Setup ---');
+  console.log('Target Dist Path:', distPath);
+  if (fs.existsSync(distPath)) {
+    console.log('Dist folder exists. Contents:', fs.readdirSync(distPath));
+  } else {
+    console.error('CRITICAL: Dist folder NOT found at', distPath);
+  }
+  
+  app.use(express.static(distPath, {
+    index: false, // Don't serve index.html automatically, we handle it with wildcard
+    fallthrough: true // Allow falling through to API routes or wildcard
+  }));
 
   // Initialize MySQL Connection Pool
   const pool = mysql.createPool({
@@ -208,8 +208,12 @@ async function startServer() {
   });
 
   app.get('*', (req, res) => {
-    const indexPath = path.resolve(__dirname, 'dist', 'index.html');
-    res.sendFile(indexPath);
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('Application not built correctly. Please check server logs.');
+    }
   });
 
   app.listen(PORT, "0.0.0.0", () => {
