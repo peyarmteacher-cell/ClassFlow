@@ -13,6 +13,15 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
+  // Serve static files from dist
+  const distPath = path.join(process.cwd(), 'dist');
+  console.log('Serving static files from:', distPath);
+  
+  app.use(express.static(distPath, {
+    etag: false,
+    maxAge: 0 // Disable caching during debugging
+  }));
+
   // Initialize MySQL Connection Pool
   const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
@@ -190,11 +199,9 @@ async function startServer() {
     }
   });
 
-  // Serve static files from dist
-  const distPath = path.join(__dirname, 'dist');
-  app.use(express.static(distPath));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+    const indexPath = path.join(process.cwd(), 'dist', 'index.html');
+    res.sendFile(indexPath);
   });
 
   app.listen(PORT, "0.0.0.0", () => {
